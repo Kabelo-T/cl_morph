@@ -240,10 +240,10 @@ def plot_corrs(data_dict: dict, params: list[str], labels: list[str], time: np.n
     yticks = np.arange(0, 0.9, 0.1)
     if am:
         t = 'a(m)'
-        time_label = 'm = M/M(z=0)'
+        time_label = r'$m = M/M(a=1)$'
     else:
         t = 'm(a)'
-        time_label = 'Scale Factor a = 1/(1+z)'
+        time_label = r'Scale Factor $a = 1/(1+z)$'
 
     axs.set_xlabel(time_label)
 
@@ -308,7 +308,7 @@ def add_lbt_twiny(axs, xticks, xlim):
     ax2.set_xlabel("Lookback Time (Gyr)", size=16)
 
 
-def plot_preds(axs, curves, tbins, labels, colors=CURVE_COLORS, fill=CURVE_FILL):
+def plot_preds(axs, curves, tbins, labels, colors=CURVE_COLORS, fill=CURVE_FILL, am=False):
     xticks = np.arange(0, 1.1, 0.1)
     xlim = (0, 1.01)
     yticks = np.arange(0, 0.9, 0.1)
@@ -320,28 +320,36 @@ def plot_preds(axs, curves, tbins, labels, colors=CURVE_COLORS, fill=CURVE_FILL)
             axs.fill_between(tbins, np.abs(curve[0]), np.abs(curve[2]),
                               color=color, alpha=0.2)
 
-    axs.set_xlabel('Scale Factor a = 1/(1+z)')
+    if am:
+        axs.set_xlabel(r'$m = M/M(a=1)$')
+        axs.set_ylabel(r'$\rho_s (a(m)_{test}, a(m)_{pred})$', fontsize=LATEX_FONTSIZE)
+    else:
+        axs.set_xlabel(r'Scale Factor $a = 1/(1+z)$')
+        axs.set_ylabel(r'$\rho_s (m(a)_{test}, m(a)_{pred})$', fontsize=LATEX_FONTSIZE)
     axs.set_xticks(xticks)
     axs.set_xlim(xlim)
-    axs.set_ylabel(r'$\rho_s (m(a)_{test}, m(a)_{pred})$', fontsize=LATEX_FONTSIZE)
     axs.set_yticks(yticks)
     axs.set_ylim(ylim)
     axs.grid()
     bump_latex_legend_fontsize(axs.legend())
 
-    add_lbt_twiny(axs, xticks, xlim)
+    if not am:
+        add_lbt_twiny(axs, xticks, xlim)
 
 
-def plot_feature_corrs(axs, corr_dict, params, labels, tbins, sm=True):
+def plot_feature_corrs(axs, corr_dict, params, labels, tbins, sm=True, am=False):
     xticks = np.arange(0, 1.1, 0.1)
     xlim = (0, 1.01)
+    history = 'am' if am else 'M/M0'
+    time = tbins if am else tbins[::-1]
 
     plot_corrs(corr_dict, params=params, labels=labels,
-               time=tbins[::-1], axs=axs, sm=sm, history='M/M0')
+               time=time, axs=axs, sm=sm, am=am, history=history)
     axs.set_xticks(xticks)
     axs.set_xlim(xlim)
 
-    add_lbt_twiny(axs, xticks, xlim)
+    if not am:
+        add_lbt_twiny(axs, xticks, xlim)
 
 
 def plot_dynamical_time(axs, xlim, xticks, scales, lookback_time):

@@ -30,12 +30,17 @@ DS_CURVE_LABELS = ['All', ' + '.join([DS_LABELS[0], DS_LABELS[1], DS_LABELS[4]])
 DS_CURVE_COLORS = ['k', '#009E73', '#F0E442', '#CC79A7']
 DS_CURVE_FILL = [True, False, False, True]
 
-def sm_predict(features):
-    mah_dict, mah, _, tbins, _,  df = futils.load(features)
-    corr_dict, _ = datutils.prepare_ma_corrs(mah_dict, df)
-    mah = np.vstack([mah]*3)  # because we have 3 projections
+def sm_predict(features, mah='ma'):
+    mah_dict, ma, am, aexp_bins, mass_bins, df = futils.load(features)
+    if mah == 'am':
+        corr_dict = datutils.prepare_am_corrs(am, mass_bins, df)
+        tbins = mass_bins
+        y = np.vstack([am]*3)  # because we have 3 projections
+    else:
+        corr_dict, _ = datutils.prepare_ma_corrs(mah_dict, df)
+        tbins = aexp_bins
+        y = np.vstack([ma]*3)  # because we have 3 projections
     curves = []
-    y = mah
 
     x = np.vstack([df['rhalf_circ'], df['C'], df['A'],
            df['sersic_amplitude'], df['m14'], df['core_C']]).T
@@ -61,11 +66,17 @@ def sm_predict(features):
     return mah_dict, curves, tbins, corr_dict
 
 
-def ds_predict(features):
-    mah_dict, mah, _, tbins, _,  df = futils.load(features)
-    corr_dict, _ = datutils.prepare_ma_corrs(mah_dict, df)
+def ds_predict(features, mah='ma'):
+    mah_dict, ma, am, aexp_bins, mass_bins, df = futils.load(features)
+    if mah == 'am':
+        corr_dict = datutils.prepare_am_corrs(am, mass_bins, df)
+        tbins = mass_bins
+        y = am
+    else:
+        corr_dict, _ = datutils.prepare_ma_corrs(mah_dict, df)
+        tbins = aexp_bins
+        y = ma
     curves = []
-    y = mah
 
     x = np.vstack([df['eta_200[3]'], df['delta_200[4]'], df['fm_200[5]'],
                    df['fm2_200[6]'], df['3d']]).T
@@ -89,13 +100,14 @@ def ds_predict(features):
     return mah_dict, curves, tbins, corr_dict
 
 
-def predict(features, save=False, radius=False):
+def predict(features, save=False, radius=False, mah='ma'):
+    am_flag = mah == 'am'
     if features == 'sm':
-        mah_dict, curves, tbins, corr_dict = sm_predict(features)
+        mah_dict, curves, tbins, corr_dict = sm_predict(features, mah)
         labels, params, param_labels, sm_flag = SM_LABELS, SM_PARAMS, SM_PARAM_LABELS, True
         curve_colors, curve_fill = plots.CURVE_COLORS, plots.CURVE_FILL
     else:
-        mah_dict, curves, tbins, corr_dict = ds_predict(features)
+        mah_dict, curves, tbins, corr_dict = ds_predict(features, mah)
         labels = DS_CURVE_LABELS
         if radius:
             params, param_labels = DS_PARAMS, DS_LABELS
@@ -105,13 +117,13 @@ def predict(features, save=False, radius=False):
         curve_colors, curve_fill = DS_CURVE_COLORS, DS_CURVE_FILL
 
     fig, axs = plt.subplots(nrows=1, ncols=2, figsize=(16, 6), constrained_layout=True)
-    plots.plot_feature_corrs(axs[0], corr_dict, params, param_labels, tbins, sm=sm_flag)
-    plots.plot_preds(axs[1], curves, tbins, labels, colors=curve_colors, fill=curve_fill)
+    plots.plot_feature_corrs(axs[0], corr_dict, params, param_labels, tbins, sm=sm_flag, am=am_flag)
+    plots.plot_preds(axs[1], curves, tbins, labels, colors=curve_colors, fill=curve_fill, am=am_flag)
     if save:
         if features =='sm':
-            plt.savefig('plots/sm_ma_preds.pdf')
+            plt.savefig(f'plots/sm_{mah}_preds.pdf')
         else:
-            plt.savefig('plots/ds_ma_preds.pdf')
+            plt.savefig(f'plots/ds_{mah}_preds.pdf')
     plt.show()
     return
 
@@ -124,5 +136,7 @@ if __name__ == '__main__':
                         help="Save plots")
     parser.add_argument('--radius', action="store_true",
                         help="Include splashback/truncation radii in DS predictions")
+    parser.add_argument('--mah', type=str, default='ma', choices=['ma', 'am'],
+                        help="mass accretion history representation: m(a) (default) or a(m)")
     args = parser.parse_args()
-    predict(args.features, args.save, args.radius)
+    predict(args.features, args.save, args.radius, args.mah)
