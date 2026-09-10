@@ -30,9 +30,9 @@ dsdf.drop(columns=['eta_500[8]', 'delta_500[9]',
 # quality/map availability means core concentration ('iconc') isn't
 # measurable for every halo in every projection, so we restrict to the
 # halos with a valid measurement in all three projections.
-ixy = futils.get_morph(sm_dir='results/xy/r_0.03Mpc_300.csv')
-iyz = futils.get_morph(sm_dir='results/yz/r_0.03Mpc_286.csv')
-izx = futils.get_morph(sm_dir='results/zx/r_0.03Mpc_297.csv')
+ixy = futils.get_morph(sm_dir=futils.find_result_csv('results/xy', 'r_0.03Mpc'))
+iyz = futils.get_morph(sm_dir=futils.find_result_csv('results/yz', 'r_0.03Mpc'))
+izx = futils.get_morph(sm_dir=futils.find_result_csv('results/zx', 'r_0.03Mpc'))
 sm_halo_ids = futils.valid_ids(ixy, iyz, izx)
 
 inner_df = pd.concat(

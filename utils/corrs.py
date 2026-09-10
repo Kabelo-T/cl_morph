@@ -125,7 +125,7 @@ def main():
     dsdf = dsdf.join(m14['3d'])
 
     smdf = futils.get_morphologies(halo_ids)
-    inner_df = futils.get_morphologies(halo_ids, 'r_0.03Mpc_205.csv')
+    inner_df = futils.get_morphologies(halo_ids, 'rin30.0kpc_rout1.0Mpc_305.csv')
     iconc = inner_df['C']
     iconc.name = 'core_C'
 

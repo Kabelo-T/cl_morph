@@ -1,3 +1,4 @@
+import glob
 import os
 
 import pandas as pd
@@ -326,6 +327,18 @@ def get_virial_radius(idx: int = None, file: str = None) -> tuple:
     return rvir, ovdens
 
 
+def find_result_csv(proj_dir: str, prefix: str) -> str:
+    """Locate a statmorph results CSV by aperture prefix (e.g. 'r_0.03Mpc'),
+    tolerating the trailing cluster-count suffix that measure_morphs.py bakes
+    into the filename, which varies by run and by projection.
+    """
+    matches = glob.glob(os.path.join(proj_dir, f'{prefix}_*.csv'))
+    if len(matches) != 1:
+        raise FileNotFoundError(
+            f"expected exactly one match for prefix {prefix!r} in {proj_dir!r}, found {matches}")
+    return matches[0]
+
+
 def get_morph(halo_ids=None, sm_dir: str = 'results/zx/rin50.0kpc_rout1.0Mpc_305.csv', all=False) -> pd.DataFrame:
     sm_df = pd.read_csv(sm_dir)
     sm_df.set_index('ID', inplace=True)
@@ -442,9 +455,9 @@ def load_sm(stack=True):
         if True, stack all 3 projections (xy, yz, zx) into one dataframe;
         if False, use only the zx projection, by default True
     """
-    ixy = get_morph(sm_dir='results/xy/r_0.03Mpc_300.csv')
-    iyz = get_morph(sm_dir='results/yz/r_0.03Mpc_286.csv')
-    izx = get_morph(sm_dir='results/zx/r_0.03Mpc_297.csv')
+    ixy = get_morph(sm_dir=find_result_csv('results/xy', 'r_0.03Mpc'))
+    iyz = get_morph(sm_dir=find_result_csv('results/yz', 'r_0.03Mpc'))
+    izx = get_morph(sm_dir=find_result_csv('results/zx', 'r_0.03Mpc'))
     halo_ids = valid_ids(ixy, iyz, izx)
     m14 = get_m14()
     m14 = m14.loc[halo_ids]

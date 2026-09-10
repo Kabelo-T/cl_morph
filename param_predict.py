@@ -31,9 +31,9 @@ AHF_LABELS = ['Number of Substructures', 'Virial Mass', 'Particle Count', 'Viria
               'Kinetic Energy', 'Potential Energy', 'NFW Concentration', 'Gas Mass',
               'Stellar Mass']
 
-SM_CORE_XY_FILE = 'results/xy/r_0.03Mpc_300.csv'
-SM_CORE_YZ_FILE = 'results/yz/r_0.03Mpc_286.csv'
-SM_CORE_ZX_FILE = 'results/zx/r_0.03Mpc_297.csv'
+SM_CORE_XY_FILE = futils.find_result_csv('results/xy', 'r_0.03Mpc')
+SM_CORE_YZ_FILE = futils.find_result_csv('results/yz', 'r_0.03Mpc')
+SM_CORE_ZX_FILE = futils.find_result_csv('results/zx', 'r_0.03Mpc')
 
 SM_LABELS_MAP = {
     'xc_centroid': 'X Centroid',
